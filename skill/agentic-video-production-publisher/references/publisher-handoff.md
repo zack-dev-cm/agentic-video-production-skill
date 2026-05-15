@@ -47,3 +47,5 @@ Record these milestones in the YouTube creator bundle or equivalent log:
 If the local environment has `openclaw-youtube-tiktok-publisher`, use it for browser execution after this skill exports the production and YouTube bundles.
 
 If the public ClawHub `youtube-openclaw-creator` skill is installed, use its scripts to append execution steps, validate the YouTube bundle, and render the final report.
+
+For TikTok, export `runs/tiktok-openclaw-bundle.json` with `scripts/export_tiktok_handoff.py`, then use the OpenClaw publisher skill to execute the browser upload and append any final post URL or screenshot evidence back into the production bundle.

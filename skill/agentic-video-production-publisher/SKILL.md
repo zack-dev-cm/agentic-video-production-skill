@@ -60,6 +60,12 @@ python3 {baseDir}/scripts/render_video_plan.py --bundle runs/video-bundle.json -
 python3 {baseDir}/scripts/export_youtube_handoff.py --bundle runs/video-bundle.json --out runs/youtube-openclaw-bundle.json --channel-name "Channel" --browser-profile "youtube-profile" --video-title "Final title" --video-file exports/final.mp4
 ```
 
+For TikTok:
+
+```bash
+python3 {baseDir}/scripts/export_tiktok_handoff.py --bundle runs/video-bundle.json --out runs/tiktok-openclaw-bundle.json --browser-profile "tiktok-profile" --video-file exports/final.mp4 --caption "Caption" --hashtag aivideo
+```
+
 Then use `openclaw-youtube-tiktok-publisher` or `youtube-openclaw-creator` to upload through the logged-in OpenClaw browser profile.
 
 ## Workflow
@@ -149,7 +155,7 @@ Block or fix:
 
 Before opening YouTube Studio or TikTok:
 
-- export the YouTube handoff bundle
+- export the YouTube or TikTok handoff bundle
 - render the production report
 - keep final title, description, tags, thumbnail, privacy, audience, source provenance, and attribution in one place
 - use the logged-in OpenClaw browser profile
@@ -170,6 +176,7 @@ Read `references/publisher-handoff.md` before handing a completed export to YouT
 - `scripts/check_video_bundle.py`: validate references, prompt hygiene, rights notes, final export, and publish readiness.
 - `scripts/render_video_plan.py`: render a markdown plan/report from the bundle.
 - `scripts/export_youtube_handoff.py`: create a bundle compatible with the OpenClaw YouTube creator workflow.
+- `scripts/export_tiktok_handoff.py`: create a TikTok handoff bundle for the OpenClaw publisher workflow.
 
 ## Done Criteria
 

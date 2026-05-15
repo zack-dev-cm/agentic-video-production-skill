@@ -14,7 +14,7 @@ The skill is designed for Claude, Codex, OpenClaw, GitHub, and ClawHub. It does 
 - Separates identity, wardrobe, environment plates, motion prompts, and final edit provenance.
 - Keeps music as an edit map while keeping generation-scene audio diegetic.
 - Validates prompt hygiene, missing rights notes, missing references, and publish readiness.
-- Exports a YouTube handoff bundle compatible with supervised OpenClaw publishing workflows.
+- Exports YouTube and TikTok handoff bundles compatible with supervised OpenClaw publishing workflows.
 
 ## Quick Start
 
@@ -51,17 +51,23 @@ mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 cp -R skill/agentic-video-production-publisher "${CODEX_HOME:-$HOME/.codex}/skills/"
 ```
 
+## Tests
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
 ## ClawHub Publish
+
+The current `clawhub publish` CLI publishes under the logged-in account. Run `clawhub whoami` first if the owner matters.
 
 ```bash
 clawhub publish "$PWD/skill/agentic-video-production-publisher" \
-  --owner zack-dev-cm \
   --slug agentic-video-production-publisher \
   --name "Agentic Video Production Publisher" \
-  --version 1.0.0 \
+  --version 1.0.1 \
   --tags "video,openclaw,youtube,ai-production,skills" \
-  --changelog "Initial public release for consistent-character AI video production and OpenClaw publisher handoff." \
-  --clawscan-note "Workflow creates local manifests and publish handoff bundles; logged-in browser publishing remains supervised and uses existing OpenClaw profile sessions."
+  --changelog "Tighten QC checks, fix current ClawHub CLI docs, and add TikTok handoff export."
 ```
 
 ## Safety

@@ -51,15 +51,15 @@ Do not commit generated videos, music files, private prompt archives, cookies, b
 
 Publish the skill folder, not the repo root:
 
+The current `clawhub publish` CLI publishes under the logged-in account. Run `clawhub whoami` before publishing if the owner matters.
+
 ```bash
 clawhub publish "$PWD/skill/agentic-video-production-publisher" \
-  --owner zack-dev-cm \
   --slug agentic-video-production-publisher \
   --name "Agentic Video Production Publisher" \
-  --version 1.0.0 \
+  --version 1.0.1 \
   --tags "video,openclaw,youtube,ai-production,skills" \
-  --changelog "Initial public release for consistent-character AI video production and OpenClaw publisher handoff." \
-  --clawscan-note "Workflow creates local manifests and publish handoff bundles; logged-in browser publishing remains supervised and uses existing OpenClaw profile sessions."
+  --changelog "Tighten QC checks, fix current ClawHub CLI docs, and add TikTok handoff export."
 ```
 
 After publish, inspect the ClawHub entry and confirm moderation status before calling the release complete.

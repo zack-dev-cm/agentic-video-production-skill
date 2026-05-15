@@ -26,6 +26,22 @@ def add_issue(bucket: list[dict[str, str]], kind: str, message: str) -> None:
     bucket.append({"kind": kind, "message": message})
 
 
+def number_value(
+    value: Any,
+    label: str,
+    errors: list[dict[str, str]],
+    warnings: list[dict[str, str]],
+    *,
+    required: bool,
+) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        bucket = errors if required else warnings
+        add_issue(bucket, label, f"{label} must be numeric; got {value!r}.")
+        return 0.0
+
+
 def exists_for_path(value: str, repo_root: Path) -> bool:
     if not value or re.match(r"^https?://", value):
         return True
@@ -72,7 +88,14 @@ def main() -> int:
 
     if not str(project.get("title") or "").strip():
         add_issue(errors, "project.title", "Project title is required.")
-    if float(project.get("target_runtime_seconds") or 0) <= 0:
+    target_runtime = number_value(
+        project.get("target_runtime_seconds"),
+        "project.target_runtime_seconds",
+        errors,
+        warnings,
+        required=False,
+    )
+    if target_runtime <= 0:
         add_issue(warnings, "project.runtime", "Target runtime is not set.")
     if not str(project.get("aspect_ratio") or "").strip():
         add_issue(warnings, "project.aspect_ratio", "Target aspect ratio is not set.")
@@ -122,7 +145,13 @@ def main() -> int:
             add_issue(errors, "shots", "Each shot must be an object.")
             continue
         shot_id = str(shot.get("shot_id") or "?").strip()
-        runtime = float(shot.get("runtime_seconds") or 0)
+        runtime = number_value(
+            shot.get("runtime_seconds"),
+            f"shot.{shot_id}.runtime_seconds",
+            errors,
+            warnings,
+            required=True,
+        )
         total_shot_runtime += max(runtime, 0.0)
         if runtime <= 0:
             add_issue(errors, f"shot.{shot_id}", "runtime_seconds must be greater than 0.")
@@ -142,8 +171,15 @@ def main() -> int:
                 add_issue(warnings, "private_path", f"Shot reference uses a private absolute path: {ref_text}")
             if not exists_for_path(ref_text, repo_root):
                 add_issue(warnings, f"shot.{shot_id}", f"reference does not exist locally: {ref_text}")
-        for character_slug in shot.get("characters") or []:
-            if character_slugs and str(character_slug) not in character_slugs:
+        shot_characters = [str(item).strip() for item in shot.get("characters") or [] if str(item).strip()]
+        if shot_characters and not character_slugs:
+            add_issue(
+                warnings,
+                f"shot.{shot_id}",
+                "Shot lists characters but no character bible exists in bundle.characters.",
+            )
+        for character_slug in shot_characters:
+            if character_slugs and character_slug not in character_slugs:
                 add_issue(warnings, f"shot.{shot_id}", f"Unknown character slug: {character_slug}")
         prompt_text = read_prompt(shot, repo_root)
         if NON_DIEGETIC_RE.search(prompt_text):
@@ -157,22 +193,30 @@ def main() -> int:
             if display_name and re.search(rf"\b{re.escape(display_name)}\b", prompt_text):
                 add_issue(warnings, f"shot.{shot_id}", f"Prompt uses display name '{display_name}' instead of visual markers.")
 
-    target_runtime = float(project.get("target_runtime_seconds") or 0)
     if target_runtime and total_shot_runtime and abs(total_shot_runtime - target_runtime) > max(3.0, target_runtime * 0.15):
         add_issue(warnings, "runtime", f"Shot runtime total {total_shot_runtime:.1f}s differs from target {target_runtime:.1f}s.")
 
     final_video = str(assets.get("final_video") or "").strip()
     youtube = publish.get("youtube") or {}
+    tiktok = publish.get("tiktok") or {}
     publish_requested = bool(str(youtube.get("channel_name") or "").strip() or str(youtube.get("browser_profile") or "").strip())
-    if publish_requested:
+    tiktok_requested = bool(
+        str(tiktok.get("browser_profile") or "").strip()
+        or str(tiktok.get("caption") or "").strip()
+        or tiktok.get("hashtags")
+    )
+    if publish_requested or tiktok_requested:
         if not final_video:
-            add_issue(errors, "assets.final_video", "YouTube publish is configured but final_video is missing.")
+            add_issue(errors, "assets.final_video", "Publish handoff is configured but final_video is missing.")
         elif not exists_for_path(final_video, repo_root):
             add_issue(errors, "assets.final_video", f"final_video does not exist locally: {final_video}")
+    if publish_requested:
         if not str(youtube.get("channel_name") or "").strip():
             add_issue(errors, "publish.youtube.channel_name", "YouTube channel name is required for publish handoff.")
         if not str(youtube.get("browser_profile") or "").strip():
             add_issue(errors, "publish.youtube.browser_profile", "OpenClaw browser profile is required for publish handoff.")
+    if tiktok_requested and not str(tiktok.get("browser_profile") or "").strip():
+        add_issue(errors, "publish.tiktok.browser_profile", "OpenClaw browser profile is required for TikTok handoff.")
 
     status = "PASS" if not errors and not warnings else "REVIEW" if not errors else "BLOCK"
     report = {
