@@ -47,6 +47,17 @@ def require(value: str, label: str) -> str:
     return value.strip()
 
 
+def portable_path(path: Path, base_dir: Path) -> str:
+    resolved = path.expanduser().resolve()
+    candidates = [base_dir.expanduser().resolve(), Path.cwd().resolve()]
+    for candidate in candidates:
+        try:
+            return str(resolved.relative_to(candidate))
+        except ValueError:
+            continue
+    return resolved.name
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", required=True, help="Production bundle JSON.")
@@ -64,6 +75,8 @@ def main() -> int:
     args = parser.parse_args()
 
     source_path = Path(args.bundle).expanduser().resolve()
+    out_path = Path(args.out).expanduser().resolve()
+    source_label = portable_path(source_path, out_path.parent)
     source = load_json(source_path)
     project = source.get("project") or {}
     assets = source.get("assets") or {}
@@ -81,7 +94,7 @@ def main() -> int:
     tags = dedupe([str(item) for item in (youtube.get("tags") or [])] + args.tag)
     playlists = dedupe([str(item) for item in (youtube.get("playlists") or [])] + args.playlist)
     notes = [
-        f"Source production bundle: {source_path}",
+        f"Source production bundle: {source_label}",
         f"Music provider: {music.get('provider', '')}",
         f"Music source: {music.get('source', '')}",
         f"Music rights: {music.get('rights_note', '')}",
@@ -111,7 +124,7 @@ def main() -> int:
             "video_file": video_file,
             "description_file": choose(args.description_file, youtube.get("description_file"), assets.get("description_file")),
             "thumbnail_file": choose(args.thumbnail_file, assets.get("thumbnail_file")),
-            "extra_files": [str(source_path)],
+            "extra_files": [source_label],
         },
         "artifacts": {
             "youtube_studio_url": choose(youtube.get("studio_url")),
@@ -132,7 +145,6 @@ def main() -> int:
         "steps": [],
     }
 
-    out_path = Path(args.out).expanduser().resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(out_path)

@@ -1,10 +1,10 @@
-# Post-Launch Critical Review: v1.0.0 -> v1.0.1
+# Post-Launch Critical Review: v1.0.0 -> v1.0.2
 
 ## Verdict
 
 Rework, then ship free.
 
-The v1.0.0 skill had a useful production spine, but it was too broad in its public promise and under-tested for a package meant to coordinate expensive video-generation work. v1.0.1 tightens the parts that can fail deterministically.
+The v1.0.0 skill had a useful production spine, but it was too broad in its public promise and under-tested for a package meant to coordinate expensive video-generation work. v1.0.1 tightened deterministic checks. v1.0.2 fixes the remaining public-surface mismatch around TikTok tags and removes absolute source-bundle paths from handoff exports.
 
 ## What Was Weak
 
@@ -13,6 +13,8 @@ The v1.0.0 skill had a useful production spine, but it was too broad in its publ
 3. Character consistency blind spot: the checker did not warn when shots referenced character slugs while `bundle.characters` was empty.
 4. Runtime robustness: malformed numeric fields could crash validation instead of returning a useful QC finding.
 5. Trust surface: v1.0.0 had smoke checks from the release process but no committed test suite.
+6. Registry discoverability: v1.0.1 added TikTok handoff but did not add a `tiktok` ClawHub tag.
+7. Handoff privacy: v1.0.1 wrote the source production bundle as an absolute local path inside YouTube/TikTok handoff JSON.
 
 ## Adjustments Made
 
@@ -21,6 +23,8 @@ The v1.0.0 skill had a useful production spine, but it was too broad in its publ
 - Updated `scripts/check_video_bundle.py` to warn on shot characters without a character bible.
 - Updated numeric parsing so bad runtimes become validation findings instead of tracebacks.
 - Added `tests/test_video_scripts.py` covering character-bible warnings, bad runtime handling, and YouTube/TikTok handoff exports.
+- Added `tiktok` to release/publish tags.
+- Changed handoff exporters to record the source production bundle as a relative label when possible, falling back to the filename instead of a private absolute path.
 
 ## Product Gate
 

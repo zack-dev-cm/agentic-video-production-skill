@@ -148,7 +148,11 @@ class VideoProductionScriptsTest(unittest.TestCase):
             youtube_payload = json.loads(youtube.read_text())
             tiktok_payload = json.loads(tiktok.read_text())
             self.assertEqual(youtube_payload["run"]["browser_profile"], "yt-profile")
+            self.assertIn("Source production bundle: bundle.json", youtube_payload["run"]["notes"])
+            self.assertEqual(youtube_payload["assets"]["extra_files"], ["bundle.json"])
             self.assertEqual(tiktok_payload["platform"], "tiktok")
+            self.assertEqual(tiktok_payload["source_production_bundle"], "bundle.json")
+            self.assertEqual(tiktok_payload["assets"]["extra_files"], ["bundle.json"])
             self.assertEqual(tiktok_payload["content"]["hashtags"], ["#aivideo"])
 
 

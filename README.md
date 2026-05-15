@@ -65,9 +65,9 @@ The current `clawhub publish` CLI publishes under the logged-in account. Run `cl
 clawhub publish "$PWD/skill/agentic-video-production-publisher" \
   --slug agentic-video-production-publisher \
   --name "Agentic Video Production Publisher" \
-  --version 1.0.1 \
-  --tags "video,openclaw,youtube,ai-production,skills" \
-  --changelog "Tighten QC checks, fix current ClawHub CLI docs, and add TikTok handoff export."
+  --version 1.0.2 \
+  --tags "video,openclaw,youtube,tiktok,ai-production,skills" \
+  --changelog "Align ClawHub tags with TikTok support and avoid absolute source-bundle paths in handoff exports."
 ```
 
 ## Safety

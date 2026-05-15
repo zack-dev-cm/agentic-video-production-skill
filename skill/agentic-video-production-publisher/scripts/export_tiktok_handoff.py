@@ -47,6 +47,17 @@ def dedupe(values: list[str]) -> list[str]:
     return out
 
 
+def portable_path(path: Path, base_dir: Path) -> str:
+    resolved = path.expanduser().resolve()
+    candidates = [base_dir.expanduser().resolve(), Path.cwd().resolve()]
+    for candidate in candidates:
+        try:
+            return str(resolved.relative_to(candidate))
+        except ValueError:
+            continue
+    return resolved.name
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", required=True, help="Production bundle JSON.")
@@ -58,6 +69,8 @@ def main() -> int:
     args = parser.parse_args()
 
     source_path = Path(args.bundle).expanduser().resolve()
+    out_path = Path(args.out).expanduser().resolve()
+    source_label = portable_path(source_path, out_path.parent)
     source = load_json(source_path)
     assets = source.get("assets") or {}
     publish = source.get("publish") or {}
@@ -76,7 +89,7 @@ def main() -> int:
         "schema_version": "1.0",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "platform": "tiktok",
-        "source_production_bundle": str(source_path),
+        "source_production_bundle": source_label,
         "run": {
             "browser_profile": browser_profile,
             "operator_mode": "supervised",
@@ -88,7 +101,7 @@ def main() -> int:
         },
         "assets": {
             "video_file": video_file,
-            "extra_files": [str(source_path)],
+            "extra_files": [source_label],
         },
         "provenance": {
             "music_provider": str(music.get("provider") or "").strip(),
@@ -113,7 +126,6 @@ def main() -> int:
         "steps": [],
     }
 
-    out_path = Path(args.out).expanduser().resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(out_path)
