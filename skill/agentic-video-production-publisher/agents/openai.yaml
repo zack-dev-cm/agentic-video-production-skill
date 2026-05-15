@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agentic Video Production Publisher"
+  short_description: "Run consistent AI video production to publish"
+  default_prompt: "Use $agentic-video-production-publisher to plan a consistent-character music video, track generated assets, validate the production bundle, and hand off the final export to OpenClaw YouTube publishing."

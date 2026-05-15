@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+runs/
+reports/
+exports/
+dist/
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.aiff
